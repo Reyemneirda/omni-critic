@@ -3,14 +3,22 @@ var path = require("path");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
-
+const passport = require("passport");
 const config = require("./config/db");
+const User = require("./models/user");
+const LocalStrategy = require("passport-local");
+const passportLocalMongoose = require("passport-local-mongoose");
 
 var app = express();
 
 // this is our MongoDB database
-const dbRoute = config.database;
-console.log(dbRoute);
+var port = process.env.PORT || 5000;
+
+if (port == 5000) {
+  var dbRoute = config.database_test;
+} else {
+  var dbRoute = config.database;
+}
 // connects our back end code with the database
 mongoose.connect(
   dbRoute,
@@ -27,13 +35,49 @@ db.on("error", console.error.bind(console, "MongoDB connection error:"));
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
-var articlesRoutes = require("./routes/api/articles");
 
+app.use(
+  require("express-session")({
+    secret: "keyboard cat",
+    resave: true,
+    saveUninitialized: true
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(
+  new LocalStrategy(function(username, password, done) {
+    User.findOne({ username: username }, function(err, user) {
+      if (err) {
+        return done(err);
+      }
+      if (!user) {
+        return done(null, false, { message: "Not found." });
+      }
+      return done(null, user);
+    });
+  })
+);
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+});
+
+var articlesRoutes = require("./routes/api/articles");
+var usersRoutes = require("./routes/api/users");
+
+app.use("/api/users", usersRoutes);
 app.use("/api/articles", articlesRoutes);
+
 app.get("/", function(req, res) {
   res.send("Bizaare");
 });
-var port = process.env.PORT || 5000;
 app.listen(port);
 
 console.log("server started " + port);
