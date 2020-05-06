@@ -14,6 +14,7 @@ exports.index = function(req, res) {
     } else {
       console.log(users);
       res.send({ status: 200, response: users });
+    }
   });
 };
 exports.user_signup = function(req, res) {
