@@ -8,6 +8,7 @@ const config = require("./config/db");
 const User = require("./models/user");
 const LocalStrategy = require("passport-local");
 const passportLocalMongoose = require("passport-local-mongoose");
+var flash = require("connect-flash");
 
 var app = express();
 
@@ -35,7 +36,6 @@ db.on("error", console.error.bind(console, "MongoDB connection error:"));
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
-
 app.use(
   require("express-session")({
     secret: "keyboard cat",
@@ -48,15 +48,7 @@ app.use(passport.session());
 
 passport.use(
   new LocalStrategy(function(username, password, done) {
-    User.findOne({ username: username }, function(err, user) {
-      if (err) {
-        return done(err);
-      }
-      if (!user) {
-        return done(null, false, { message: "Not found." });
-      }
-      return done(null, user);
-    });
+    User.isValidUserPassword(username, password, done);
   })
 );
 passport.serializeUser(function(user, done) {
@@ -71,12 +63,13 @@ passport.deserializeUser(function(id, done) {
 
 var articlesRoutes = require("./routes/api/articles");
 var usersRoutes = require("./routes/api/users");
+app.use(flash());
 
 app.use("/api/users", usersRoutes);
 app.use("/api/articles", articlesRoutes);
 
 app.get("/", function(req, res) {
-  res.send("Bizaare");
+  res.send(req.flash());
 });
 app.listen(port);
 

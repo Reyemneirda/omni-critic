@@ -6,7 +6,7 @@ exports.index = function(req, res) {
   console.log(req.session);
 
   if (!req.user.role.includes("Admin")) {
-    res.send({ status: 401, response: "Unautorized" });
+    res.send({ status: 401, response: "Unautorized Bitch" });
   }
   User.find({}, function(err, users) {
     if (err) {
@@ -18,22 +18,6 @@ exports.index = function(req, res) {
   });
 };
 exports.user_signup = function(req, res) {
-  // console.log("sending stuff");
-  // var username = req.body.username;
-  // var password = req.body.password;
-  // var newUser = new User();
-  // newUser.username = username;
-  // newUser.setPassword(password);
-  // console.log("Before stuff");
-  //
-  // newUser.save((err, savedUser) => {
-  //   console.log(savedUser);
-  //   if (err) {
-  //     console.log(err);
-  //   } else {
-  //     res.redirect("/");
-  //   }
-  // });
   User.register(
     new User({
       username: req.body.username,

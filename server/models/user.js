@@ -28,7 +28,7 @@ var UserSchema = new Schema(
     hash: String,
     salt: String
   },
-  { timestamps: true }
+  { collection: "users", timestamps: true }
 );
 UserSchema.plugin(uniqueValidator, { message: "is already taken." });
 UserSchema.plugin(passportLocalMongoose);
@@ -46,4 +46,30 @@ UserSchema.methods.validPassword = function(password) {
     .toString("hex");
   return this.hash === hash;
 };
+
+UserSchema.statics.isValidUserPassword = function(username, password, done) {
+  var criteria =
+    username.indexOf("@") === -1 ? { username: username } : { email: username };
+  this.findOne(criteria, "+salt +hash", function(err, user) {
+    if (err) return done(err);
+    if (!user) return done(null, false, { message: "Incorrect username." });
+    var hash = crypto
+      .pbkdf2Sync(password, user.salt, 10000, 512, "sha512")
+      .toString("hex");
+    if (err) return done(err);
+    delete user.salt;
+
+    if (hash == user.hash) {
+      delete user.hash;
+      console.log("before return");
+
+      return done(null, user);
+    }
+    console.log("Shit");
+    return done(null, false, {
+      message: "Incorrect password"
+    });
+  });
+};
+
 module.exports = mongoose.model("User", UserSchema);
