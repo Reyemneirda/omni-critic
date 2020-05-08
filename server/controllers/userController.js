@@ -6,7 +6,7 @@ exports.index = function(req, res) {
   console.log(req.session);
 
   if (!req.user.role.includes("Admin")) {
-    res.send({ status: 401, response: "Unautorized Bitch" });
+    res.send({ status: 401, response: "Unautorized" });
   }
   User.find({}, function(err, users) {
     if (err) {
@@ -32,8 +32,6 @@ exports.user_signup = function(req, res) {
         res.send(err);
       }
       passport.authenticate("local")(req, res, function() {
-        console.log(req);
-
         res.send({ status: 200, response: req.user });
       });
     }

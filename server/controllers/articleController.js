@@ -1,9 +1,9 @@
 var Article = require("../models/article");
 
 exports.index = function(req, res) {
-  if (!req.user.role.includes("Admin")) {
-    res.send({ status: 401, response: "Unautorized" });
-  }
+  // if (!req.user.role.includes("Admin")) {
+  //   res.send({ status: 401, response: "Unautorized" });
+  // }
   Article.find({}, function(err, articles) {
     if (err) {
       res.send(err);
