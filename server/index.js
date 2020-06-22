@@ -3,7 +3,11 @@ var path = require("path");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
+
 const passport = require("passport");
+
+require("./utils/passport");
+
 const config = require("./config/db");
 const User = require("./models/user");
 const LocalStrategy = require("passport-local");
@@ -46,31 +50,30 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.use(
-  new LocalStrategy(function(username, password, done) {
-    User.isValidUserPassword(username, password, done);
-  })
-);
-passport.serializeUser(function(user, done) {
-  done(null, user.id);
-});
-
-passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
-    done(err, user);
-  });
-});
-
 var articlesRoutes = require("./routes/api/articles");
 var usersRoutes = require("./routes/api/users");
-app.use(flash());
+var authRoutes = require("./routes/api/auth");
 
+app.use(flash());
+app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
-app.use("/api/articles", articlesRoutes);
+app.use(
+  "/api/articles",
+  passport.authenticate("jwt", { session: false }),
+  articlesRoutes
+);
 
 app.get("/", function(req, res) {
   res.send(req.flash());
 });
+
+// // catch 404 and forward to error handler
+// app.use(function(req, res, next) {
+//   var err = new Error("Not Found");
+//   err.status = 404;
+//   next(err);
+// });
+
 app.listen(port);
 
 console.log("server started " + port);

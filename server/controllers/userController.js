@@ -17,13 +17,15 @@ exports.index = function(req, res) {
     }
   });
 };
+
 exports.user_signup = function(req, res) {
   User.register(
     new User({
       username: req.body.username,
       email: req.body.email,
       role: ["User"],
-      bio: req.body.bio
+      bio: req.body.bio,
+      image: req.body.imagePath
     }),
     req.body.password,
     function(err, user) {
