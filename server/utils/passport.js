@@ -10,7 +10,7 @@ const User = require("../models/user");
 
 console.log(secret);
 passport.use(
-  new LocalStrategy(function(username, password, done) {
+  new LocalStrategy(function (username, password, done) {
     User.isValidUserPassword(username, password, done);
   })
 );
@@ -19,15 +19,17 @@ passport.use(
   new JWTStrategy(
     {
       jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-      secretOrKey: secret
+      secretOrKey: secret,
     },
-    function(jwtPayload, cb) {
+    function (jwtPayload, cb) {
+      console.log(jwtPayload);
+
       //find the user in db if needed
-      return User.findOneById(jwtPayload.id)
-        .then(user => {
+      return User.findOne({ _id: jwtPayload._id })
+        .then((user) => {
           return cb(null, user);
         })
-        .catch(err => {
+        .catch((err) => {
           return cb(err);
         });
     }
