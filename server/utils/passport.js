@@ -22,6 +22,8 @@ passport.use(
       secretOrKey: secret,
     },
     function (jwtPayload, cb) {
+      console.log("jwtPayload");
+
       console.log(jwtPayload);
 
       //find the user in db if needed

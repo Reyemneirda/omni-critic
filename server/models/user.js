@@ -22,6 +22,8 @@ var UserSchema = new Schema(
       match: [/\S+@\S+\.\S+/, "is invalid"],
       index: true,
     },
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     role: Array,
     bio: String,
     image: String,

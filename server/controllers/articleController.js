@@ -74,19 +74,20 @@ exports.userFeed = function (req, res, next) {
   if (typeof req.query.offset !== "undefined") {
     offset = req.query.offset;
   }
+  console.log(req.body);
 
-  User.findById(req.payload.id).then(function (user) {
+  User.findById(req.query.id).then(function (user) {
     if (!user) {
       return res.sendStatus(401);
     }
 
     Promise.all([
-      Article.find({ author: { $in: user.following } })
+      Article.find({ author: { $in: user } })
         .limit(Number(limit))
         .skip(Number(offset))
         .populate("author")
         .exec(),
-      Article.count({ author: { $in: user.following } }),
+      Article.count({ author: { $in: user } }),
     ])
       .then(function (results) {
         var articles = results[0];
