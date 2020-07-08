@@ -23,8 +23,32 @@ var ArticleSchema = new Schema({
   favorited: Boolean,
   favoritesCount: Number,
 });
-ArticleSchema.post("save", function (doc) {
-  updatedAt = Date.now;
-  slug = title.toLowerCase().replace(name.replace(/\s/g, "-"));
+ArticleSchema.pre("validate", function (next) {
+  if (!this.slug) {
+    this.slugify();
+  }
+
+  next();
 });
+
+ArticleSchema.methods.slugify = function () {
+  this.slug =
+    slug(this.title) +
+    "-" +
+    ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
+};
+ArticleSchema.methods.toJSONFor = function (user) {
+  return {
+    slug: this.slug,
+    title: this.title,
+    description: this.description,
+    body: this.body,
+    createdAt: this.createdAt,
+    updatedAt: this.updatedAt,
+    tagList: this.tagList,
+    favorited: user ? user.isFavorite(this._id) : false,
+    favoritesCount: this.favoritesCount,
+    author: this.author.toProfileJSONFor(user),
+  };
+};
 module.exports = mongoose.model("Article", ArticleSchema);

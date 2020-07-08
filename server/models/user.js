@@ -12,7 +12,7 @@ var UserSchema = new Schema(
       unique: true,
       required: [true, "can't be blank"],
       match: [/^[a-zA-Z0-9]+$/, "is invalid"],
-      index: true
+      index: true,
     },
     email: {
       type: String,
@@ -20,37 +20,37 @@ var UserSchema = new Schema(
       lowercase: true,
       required: [true, "can't be blank"],
       match: [/\S+@\S+\.\S+/, "is invalid"],
-      index: true
+      index: true,
     },
     role: Array,
     bio: String,
     image: String,
     hash: String,
-    salt: String
+    salt: String,
   },
   { collection: "users", timestamps: true }
 );
 UserSchema.plugin(uniqueValidator, { message: "is already taken." });
 UserSchema.plugin(passportLocalMongoose);
 
-UserSchema.methods.setPassword = function(password) {
+UserSchema.methods.setPassword = function (password) {
   this.salt = crypto.randomBytes(16).toString("hex");
   this.hash = crypto
     .pbkdf2Sync(password, this.salt, 10000, 512, "sha512")
     .toString("hex");
 };
 
-UserSchema.methods.validPassword = function(password) {
+UserSchema.methods.validPassword = function (password) {
   var hash = crypto
     .pbkdf2Sync(password, this.salt, 10000, 512, "sha512")
     .toString("hex");
   return this.hash === hash;
 };
 
-UserSchema.statics.isValidUserPassword = function(username, password, done) {
+UserSchema.statics.isValidUserPassword = function (username, password, done) {
   var criteria =
     username.indexOf("@") === -1 ? { username: username } : { email: username };
-  this.findOne(criteria, "+salt +hash", function(err, user) {
+  this.findOne(criteria, "+salt +hash", function (err, user) {
     if (err) return done(err);
     if (!user) return done(null, false, { message: "Incorrect username." });
     var hash = crypto
@@ -67,8 +67,56 @@ UserSchema.statics.isValidUserPassword = function(username, password, done) {
     }
     console.log("Shit");
     return done(null, false, {
-      message: "Incorrect password"
+      message: "Incorrect password",
     });
+  });
+};
+
+UserSchema.methods.toProfileJSONFor = function (user) {
+  return {
+    username: this.username,
+    bio: this.bio,
+    image:
+      this.image || "https://static.productionready.io/images/smiley-cyrus.jpg",
+    following: user ? user.isFollowing(this._id) : false,
+  };
+};
+
+UserSchema.methods.favorite = function (id) {
+  if (this.favorites.indexOf(id) === -1) {
+    this.favorites.push(id);
+  }
+
+  return this.save();
+};
+
+UserSchema.methods.unfavorite = function (id) {
+  this.favorites.remove(id);
+  return this.save();
+};
+
+UserSchema.methods.isFavorite = function (id) {
+  return this.favorites.some(function (favoriteId) {
+    return favoriteId.toString() === id.toString();
+  });
+};
+
+UserSchema.methods.follow = function (id) {
+  if (this.following.indexOf(id) === -1) {
+    this.following.push(id);
+  }
+
+  return this.save();
+};
+
+UserSchema.methods.unfollow = function (id) {
+  this.following.remove(id);
+  return this.save();
+};
+
+UserSchema.methods.isFollowing = function (id) {
+  return this.following.some(function (followId) {
+    return followId.toString() === id.toString();
   });
 };
 

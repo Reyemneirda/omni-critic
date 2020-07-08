@@ -25,10 +25,7 @@ if (port == 5000) {
   var dbRoute = config.database;
 }
 // connects our back end code with the database
-mongoose.connect(
-  dbRoute,
-  { useNewUrlParser: true, useUnifiedTopology: true }
-);
+mongoose.connect(dbRoute, { useNewUrlParser: true, useUnifiedTopology: true });
 
 let db = mongoose.connection;
 
@@ -44,7 +41,7 @@ app.use(
   require("express-session")({
     secret: "keyboard cat",
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
   })
 );
 app.use(passport.initialize());
@@ -57,13 +54,9 @@ var authRoutes = require("./routes/api/auth");
 app.use(flash());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
-app.use(
-  "/api/articles",
-  passport.authenticate("jwt", { session: false }),
-  articlesRoutes
-);
+app.use("/api/articles", articlesRoutes);
 
-app.get("/", function(req, res) {
+app.get("/", function (req, res) {
   res.send(req.flash());
 });
 
