@@ -17,11 +17,7 @@ var ArticleSchema = new Schema({
   },
   slug: String,
   description: String,
-  tagList: [
-    {
-      type: String,
-    },
-  ],
+  tagList: [{ type: mongoose.Schema.ObjectId, ref: "Category" }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: Date,
   favorited: Boolean,
